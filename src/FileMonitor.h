@@ -138,13 +138,14 @@ void FileMonitor_dispatch(struct FMHandle *h);
  *
  * Could happen when a file is removed and handler does not return
  * FM_UNMONITOR. Or the path does not exist when calling monitor().
+ *
+ * return number of non-existing paths or -1 if h is not setup properly
  */
-// TODO: return int is more useful
-bool FileMonitor_hasNonExistingPaths(const struct FMHandle *h);
+int FileMonitor_nonExistingPaths(const struct FMHandle *h);
 
 /**
  * Check if paths that previously did not exist now exists and update
- * the monoitor.
+ * the monitor.
  */
 // TODO: bad naming
 void FileMonitor_reMonitorNonExistingPaths(struct FMHandle *h);

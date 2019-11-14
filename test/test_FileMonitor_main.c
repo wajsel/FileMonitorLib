@@ -17,21 +17,15 @@ void testFM_monitorTooMany(void **state);
 
 void testFM_unMonitor(void **state);
 void testFM_unMonitorNotMonitored(void **state);
-// void testFM_update_and_delete(void **state);
-// void testFM_update(void **state);
-// void testFM_update3(void **state);
-// void testFM_unmonitor(void **state);
-// void testFM_delete(void **state);
-// void testFM_remove(void **state);
 
 void testFM_onWatchSetup(void **state);
 void testFM_onUpdate(void **state);
 void testFM_onUpdate3Files(void **state);
 void testFM_onDelete(void **state);
 
-void testFM_hasNonExistingPathsTrue(void **state);
-void testFM_hasNonExistingPathsFalse(void **state);
-void testFM_hasNonExistingPathsFalse2(void **state);
+void testFM_nonExistingPathsTrue(void **state);
+void testFM_nonExistingPathsFalse(void **state);
+void testFM_nonExistingPathsFalse2(void **state);
 
 void testFM_detectFileCreation(void **state);
 void testFM_detectFileCreatedMulti(void **state);
@@ -87,15 +81,15 @@ int main(int argc, char* argv[]) {
                                          testFM_setup,
                                          testFM_teardown),
 
-                unit_test_setup_teardown(testFM_hasNonExistingPathsTrue,
+                unit_test_setup_teardown(testFM_nonExistingPathsTrue,
                                          testFM_setup,
                                          testFM_teardown),
 
-                unit_test_setup_teardown(testFM_hasNonExistingPathsFalse,
+                unit_test_setup_teardown(testFM_nonExistingPathsFalse,
                                          testFM_setup,
                                          testFM_teardown),
 
-                unit_test_setup_teardown(testFM_hasNonExistingPathsFalse2,
+                unit_test_setup_teardown(testFM_nonExistingPathsFalse2,
                                          testFM_setup,
                                          testFM_teardown),
 

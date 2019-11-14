@@ -273,27 +273,27 @@ void testFM_onDelete(void **state)
         FileMonitor_dispatch(&fm);
 }
 
-void testFM_hasNonExistingPathsTrue(void **state)
+void testFM_nonExistingPathsTrue(void **state)
 {
         struct FMHandle fm = {0};
         FileMonitor_init(&fm);
         FileMonitor_monitor(&fm, PATH_NOT_EXISTING, NULL, NULL, NULL);
-        assert_true(FileMonitor_hasNonExistingPaths(&fm));
+        assert_int_equal(1, FileMonitor_nonExistingPaths(&fm));
 }
 
-void testFM_hasNonExistingPathsFalse(void **state)
+void testFM_nonExistingPathsFalse(void **state)
 {
         struct FMHandle fm = {0};
         FileMonitor_init(&fm);
         FileMonitor_monitor(&fm, PATH, NULL, NULL, NULL);
-        assert_false(FileMonitor_hasNonExistingPaths(&fm));
+        assert_int_equal(0, FileMonitor_nonExistingPaths(&fm));
 }
 
-void testFM_hasNonExistingPathsFalse2(void **state)
+void testFM_nonExistingPathsFalse2(void **state)
 {
         struct FMHandle fm = {0};
         FileMonitor_init(&fm);
-        assert_false(FileMonitor_hasNonExistingPaths(&fm));
+        assert_int_equal(0, FileMonitor_nonExistingPaths(&fm));
 }
 
 void testFM_detectFileCreation(void **state)
@@ -304,7 +304,7 @@ void testFM_detectFileCreation(void **state)
         FileMonitor_init(&fm);
         FileMonitor_monitor(&fm, PATH_NOT_EXISTING, onWatchSetup, onUpdate, NULL);
 
-        assert_true(FileMonitor_hasNonExistingPaths(&fm));
+        assert_true(0 < FileMonitor_nonExistingPaths(&fm));
         system("echo apa > " PATH_NOT_EXISTING);
 
         expect_string(onWatchSetup, path, PATH_NOT_EXISTING);
@@ -329,7 +329,7 @@ void testFM_detectFileCreatedMulti(void **state)
         FileMonitor_monitor(&fm, PATH_NOT_EXISTING_2, onWatchSetup, onUpdate, NULL);
         FileMonitor_monitor(&fm, PATH_NOT_EXISTING_3, onWatchSetup, onUpdate, NULL);
 
-        assert_true(FileMonitor_hasNonExistingPaths(&fm));
+        assert_true(0 < FileMonitor_nonExistingPaths(&fm));
         system("echo apa > " PATH_NOT_EXISTING_2);
 
         expect_string(onWatchSetup, path, PATH_NOT_EXISTING_2);

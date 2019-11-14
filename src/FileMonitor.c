@@ -21,6 +21,12 @@
 
 #define NL "\n"
 
+#define FOR(x)                                  \
+        for (struct FM *fm = x; fm < (x + FM_MAX_MONITORS); ++fm)
+
+#define FOR_CONST(x)                            \
+        for (const struct FM *fm = x; fm < (x + FM_MAX_MONITORS); ++fm)
+
 static void remove_monitor(struct FMHandle *h, struct FM* fm)
 {
         if (-1 != fm->wd) {
@@ -30,25 +36,22 @@ static void remove_monitor(struct FMHandle *h, struct FM* fm)
         fm->wd = -1;
 }
 
-static struct FM* findWd(struct FM *monitors, int array_length, int wd)
+static struct FM* findWd(struct FMHandle *h, const int wd)
 {
-        while (array_length--) {
-                if (wd == monitors->wd) return monitors;
-                monitors++;
+        FOR (h->monitors) {
+                if (wd == fm->wd) return fm;
         }
 
         return NULL;
 }
 
-static struct FM* findPath(struct FM *monitors, int array_length, const char* path)
+static struct FM* findPath(struct FMHandle *h, const char* path)
 {
-        while (array_length--) {
-                if (monitors->path[0] &&
-                    (0 == strncmp(path, monitors->path, FM_PATH_MAX_LENGTH))) {
-                        return monitors;
+        FOR (h->monitors) {
+                if (fm->path[0] &&
+                    (0 == strncmp(path, fm->path, FM_PATH_MAX_LENGTH))) {
+                        return fm;
                 }
-
-                monitors++;
         }
 
         return NULL;
@@ -56,7 +59,7 @@ static struct FM* findPath(struct FM *monitors, int array_length, const char* pa
 
 static void handleEvent(struct FMHandle *h, const struct inotify_event* event)
 {
-        struct FM *fm = findWd(h->monitors, FM_MAX_MONITORS, event->wd);
+        struct FM *fm = findWd(h, event->wd);
         if (fm) {
 #ifdef DEBUG
                 printf("%s"NL, fm->path);
@@ -103,9 +106,8 @@ int FileMonitor_init(struct FMHandle *h)
         // zero-initialized => scrap the hole thing
         memset(h, 0, sizeof(*h));
 
-        for (int i=0; i < FM_MAX_MONITORS; i++) {
-                h->monitors[i].wd = -1;
-        }
+        FOR(h->monitors) {fm->wd = -1;}
+
         h->inotify_fd = inotify_init1(IN_NONBLOCK);
         h->next_index = 0;
 
@@ -136,13 +138,12 @@ int FileMonitor_monitor(struct FMHandle *h, const char *path,
 
         if (-1 != rv) {
                 // check if its a known path
-                struct FM *fm = findPath(h->monitors, FM_MAX_MONITORS, path);
+                struct FM *fm = findPath(h, path);
                 if (NULL == fm) {
                         // not a known path so we use a new slot in
                         // the monitors array
                         fm = &h->monitors[h->next_index];
                         h->count++;
-
                 }
 
                 fm->wd = wd;
@@ -185,7 +186,7 @@ int FileMonitor_unMonitor(struct FMHandle *h, const char *path)
         if (!h || (0 > h->inotify_fd) || !path) return rv;
 
         rv = 0;
-        struct FM *fm = findPath(h->monitors, FM_MAX_MONITORS, path);
+        struct FM *fm = findPath(h, path);
         if (fm) {
                 remove_monitor(h, fm);
                 rv = 1;
@@ -217,27 +218,25 @@ void FileMonitor_dispatch(struct FMHandle *h)
 
 }
 
-bool FileMonitor_hasNonExistingPaths(const struct FMHandle *h)
+int FileMonitor_nonExistingPaths(const struct FMHandle *h)
 {
-        if (!h || (0 > h->inotify_fd) || h->count == 0) return false;
+        if (!h || (0 > h->inotify_fd)) return -1;
+        if (h->count == 0) return 0;
 
-        for (int i=0; i < FM_MAX_MONITORS; i++) {
-                const struct FM *fm = &h->monitors[i];
-
+        int count = 0;
+        FOR_CONST (h->monitors) {
                 if ((fm->path[0] != 0) && (-1 == fm->wd)) {
-                        return true;
+                        ++count;
                 }
         }
-        return false;
+        return count;
 }
 
 void FileMonitor_reMonitorNonExistingPaths(struct FMHandle *h)
 {
         if (!h || (0 > h->inotify_fd) || h->count == 0) return;
 
-        for (int i=0; i < FM_MAX_MONITORS; i++) {
-                struct FM *fm = &h->monitors[i];
-
+        FOR (h->monitors) {
                 if ((fm->path[0] != 0) && (-1 == fm->wd)) {
 
                         int wd = inotify_add_watch(h->inotify_fd, fm->path,
@@ -257,20 +256,22 @@ void FileMonitor_printMonitors(const struct FMHandle *h, const char* title)
 {
         if (!h) return;
 
+        int i = 0;
         printf("%s:%d\n", title, h->inotify_fd);
-        for (int i=0; i < FM_MAX_MONITORS; i++) {
-                const struct FM *fm = &h->monitors[i];
-
+        FOR_CONST (h->monitors) {
                 if (0 == fm->path[0]) continue;
 
                 printf("%i:%d %s\n", i, fm->wd, fm->path);
+                ++i;
         }
         printf("next index:%d\n", h->next_index);
 }
 
 bool FileMonitor_isMonitored(struct FMHandle *h, const char* path)
 {
-        return (NULL != findPath(h->monitors, FM_MAX_MONITORS, path));
+        if (!h || !path) return false;
+
+        return (NULL != findPath(h, path));
 }
 
 const struct FM * FileMonitor_next(const struct FMHandle *h, const struct FM *fm)
