@@ -5,7 +5,7 @@ LIB_SRC = \
 
 HEADERS = \
 	src/FileMonitor.h \
-	src/conveniences.h \
+	test/conveniences.h \
 
 APP_SRC = \
 	test/fmon.c \

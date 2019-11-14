@@ -11,7 +11,6 @@
 #include <stdio.h>
 #include <errno.h>
 
-#include "conveniences.h"
 #include "FileMonitor.h"
 
 #ifdef DEBUG
@@ -20,6 +19,7 @@
 #define WATCH_MASK (IN_DELETE_SELF | IN_CLOSE_WRITE)
 #endif
 
+#define NL "\n"
 
 static void remove_monitor(struct FMHandle *h, struct FM* fm)
 {
