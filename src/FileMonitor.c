@@ -239,11 +239,10 @@ void FileMonitor_reMonitorNonExistingPaths(struct FMHandle *h)
         FOR (h->monitors) {
                 if ((fm->path[0] != 0) && (-1 == fm->wd)) {
 
-                        int wd = inotify_add_watch(h->inotify_fd, fm->path,
+                        fm->wd = inotify_add_watch(h->inotify_fd, fm->path,
                                                    WATCH_MASK);
 
-                        fm->wd = wd;
-                        if ((-1 != wd) && (fm->onWatchSetup)) {
+                        if ((-1 != fm->wd) && (fm->onWatchSetup)) {
                                 if (FM_UNMONITOR == fm->onWatchSetup(h, fm->path)) {
                                         remove_monitor(h, fm);
                                 }
