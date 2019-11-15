@@ -170,12 +170,13 @@ int FileMonitor_monitor(struct FMHandle *h, const char *path,
                                 }
                         }
                 }
-        }
 
-        if ((-1 != wd) && onWatchSetup) {
-                onWatchSetup(h, path);
+                if ((-1 != wd) && onWatchSetup) {
+                        if (FM_UNMONITOR == onWatchSetup(h, path)) {
+                                remove_monitor(h, fm);
+                        }
+                }
         }
-
         return rv;
 }
 
