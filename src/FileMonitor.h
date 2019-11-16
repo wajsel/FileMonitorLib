@@ -150,8 +150,6 @@ int FileMonitor_nonExistingPaths(const struct FMHandle *h);
 // TODO: bad naming
 void FileMonitor_reMonitorNonExistingPaths(struct FMHandle *h);
 
-void FileMonitor_printMonitors(const struct FMHandle *h, const char *title);
-
 /**
  * Return true if path is found among monitors
  */

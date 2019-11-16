@@ -6,10 +6,12 @@ LIB_SRC = \
 HEADERS = \
 	src/FileMonitor.h \
 	test/conveniences.h \
+	test/common.h \
 
 APP_SRC = \
 	test/fmon.c \
 	test/mon_until_changed.c \
+	test/common.c \
 
 TEST_SRC = \
 	test/test_FileMonitor.c \
@@ -35,11 +37,11 @@ loc:
 	cloc --by-file-by-lang .
 
 
-fmon: test/fmon.o $(LIB_OBJS)
+fmon: test/common.o test/fmon.o $(LIB_OBJS)
 	@echo linking $@
 	@$(CC) $(CFLAGS) $(LINKER_FLAGS) $^ -o $@
 
-mon_until_changed: test/mon_until_changed.o $(LIB_OBJS)
+mon_until_changed: test/common.o test/mon_until_changed.o $(LIB_OBJS)
 	@echo linking $@
 	@$(CC) $(CFLAGS) $(LINKER_FLAGS) $^ -o $@
 

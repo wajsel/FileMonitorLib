@@ -5,6 +5,7 @@
 
 #include "FileMonitor.h"
 #include "conveniences.h"
+#include "common.h"
 
 int onSetup(struct FMHandle *fm, const char* path)
 {
@@ -54,7 +55,7 @@ int main(int argc, char *argv[])
                 FileMonitor_monitor(&fm, argv[i], onSetup, onUpdate, onDelete);
         }
         
-        FileMonitor_printMonitors(&fm, "Initial");
+        printMonitors(&fm, "Initial");
         for (;;) {
 
                 const int err = doSelect(fd, &rfds);
@@ -62,14 +63,12 @@ int main(int argc, char *argv[])
                 if (err > 0) {
                         // something happen to the monitored files
                         FileMonitor_dispatch(&fm);
-                        FileMonitor_printMonitors(&fm, "");
+                        printMonitors(&fm, "");
                 }
                 else if (err == 0) {
                         // If other files are very buzzy this may
                         // happen very seldom
 
-                        // TODO: accumulate time left from select and
-                        // compare with a timeout
                         FileMonitor_reMonitorNonExistingPaths(&fm);
                 }
                 else {

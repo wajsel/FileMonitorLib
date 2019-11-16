@@ -8,18 +8,18 @@
 #include <stdbool.h>
 #include <unistd.h>
 
-#include <stdio.h>
 #include <errno.h>
 
 #include "FileMonitor.h"
 
 #ifdef DEBUG
+#include <stdio.h>
+#define NL "\n"
 #define WATCH_MASK IN_ALL_EVENTS
 #else
 #define WATCH_MASK (IN_DELETE_SELF | IN_CLOSE_WRITE)
 #endif
 
-#define NL "\n"
 
 #define FOR(x)                                  \
         for (struct FM *fm = x; fm < (x + FM_MAX_MONITORS); ++fm)
@@ -250,21 +250,6 @@ void FileMonitor_reMonitorNonExistingPaths(struct FMHandle *h)
                         }
                 }
         }
-}
-
-void FileMonitor_printMonitors(const struct FMHandle *h, const char* title)
-{
-        if (!h) return;
-
-        int i = 0;
-        printf("%s:%d\n", title, h->inotify_fd);
-        FOR_CONST (h->monitors) {
-                if (0 == fm->path[0]) continue;
-
-                printf("%i:%d %s\n", i, fm->wd, fm->path);
-                ++i;
-        }
-        printf("next index:%d\n", h->next_index);
 }
 
 bool FileMonitor_isMonitored(struct FMHandle *h, const char* path)

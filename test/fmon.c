@@ -8,9 +8,9 @@
 
 #include "FileMonitor.h"
 #include "conveniences.h"
+#include "common.h"
 
 #define MAX_FILE_GROUPS 5
-
 
 int onSetup(struct FMHandle *fm, const char* path)
 {
@@ -74,7 +74,7 @@ int indexFileUpdated(struct FMHandle *h, const char *path)
 
         printf("Index %s updated" NL, path);
 
-        if (!f) return FM_UNMONITOR;
+        if (!f) {return FM_UNMONITOR;}
 
         // get a list of paths
         while ((0 <= (read_len = getline(&p, &line_len, f))) &&
@@ -100,7 +100,8 @@ int indexFileUpdated(struct FMHandle *h, const char *path)
         f = NULL;
 
         // Remove old monitors no longer in the list
-        const struct FM* fm = NULL;
+        // skip first entry as its the listfile itself
+        const struct FM* fm = FileMonitor_next(h, NULL);
         while (NULL != (fm = FileMonitor_next(h, fm))) {
                 bool found = false;
                 for (int i=0; i<no_lines && !found; i++) {
@@ -121,7 +122,7 @@ int indexFileUpdated(struct FMHandle *h, const char *path)
                 }
         }
 
-        FileMonitor_printMonitors(h, path);
+        printMonitors(h, path);
         return FM_MONITOR;
 }
 
@@ -129,12 +130,11 @@ int indexFileDeleted(struct FMHandle *h, const char *path)
 {
         printf("index %s deleted, cleanup monitors" NL, path);
 
-        const struct FM* fm = NULL;
+        // skip first entry as its the listfile itself
+        const struct FM* fm = FileMonitor_next(h, NULL);
         while (NULL != (fm = FileMonitor_next(h, fm))) {
-                if (0 != strcmp(path, fm->path)) {
                         printf("UnMonitor %s" NL, fm->path);
                         FileMonitor_unMonitor(h, fm->path);
-                }
         }
 
         return FM_MONITOR;
