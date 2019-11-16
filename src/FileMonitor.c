@@ -278,12 +278,13 @@ const struct FM * FileMonitor_next(const struct FMHandle *h, const struct FM *fm
 {
         if (!h) return NULL;
 
-        const struct FM* start = (NULL == fm) ? &h->monitors[0] : fm;
+        const struct FM* start = (NULL == fm) ? &h->monitors[0] : ++fm;
 
-        while (start++ != &h->monitors[FM_MAX_MONITORS]) {
+        while (start != &h->monitors[FM_MAX_MONITORS]) {
                 if (0 != start->path[0]) {
                         return start;
                 }
+                ++start;
         }
         return NULL;
 }
