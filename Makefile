@@ -34,7 +34,7 @@ OBJS = $(LIB_OBJS) $(TEST_OBJS) $(APP_OBJS) $(CMOCKERY_OBJS)
 all : test fmon mon_until_changed
 
 loc:
-	cloc --by-file-by-lang .
+	cloc --by-file-by-lang --exclude-dir cmockery .
 
 
 fmon: test/common.o test/fmon.o $(LIB_OBJS)
