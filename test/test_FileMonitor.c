@@ -122,7 +122,8 @@ void testFM_monitor(void **state)
         int err = FileMonitor_monitor(&fm, PATH, onWatchSetup, NULL, NULL);
 
         assert_int_equal(1, err);
-        assert_int_not_equal(-1, fm.monitors[0].wd);
+        // adding from the back while looking if path is already monitored
+        assert_int_not_equal(-1, fm.monitors[FM_MAX_MONITORS -1].wd);
         assert_int_equal(1, fm.count);
 }
 
@@ -176,11 +177,8 @@ void testFM_unMonitor(void **state)
         FileMonitor_monitor(&fm, PATH, NULL, NULL, NULL);
         assert_int_equal(1, fm.count);
 
-        int next_index = fm.next_index;
         assert_int_equal(1, FileMonitor_unMonitor(&fm, PATH));
         assert_int_equal(0, fm.count);
-        // next_index is not affected by unMonitor()
-        assert_int_equal(fm.next_index, next_index);
 }
 
 void testFM_unMonitorNotMonitored(void **state)

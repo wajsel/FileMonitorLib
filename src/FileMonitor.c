@@ -34,12 +34,13 @@ static void remove_monitor(struct FMHandle *h, struct FM* fm)
         }
         memset(fm, 0, sizeof(*fm));
         fm->wd = -1;
+        --h->count;
 }
 
 static struct FM* findWd(struct FMHandle *h, const int wd)
 {
         FOR (h->monitors) {
-                if (wd == fm->wd) return fm;
+                if (wd == fm->wd) {return fm;}
         }
 
         return NULL;
@@ -109,7 +110,6 @@ int FileMonitor_init(struct FMHandle *h)
         FOR(h->monitors) {fm->wd = -1;}
 
         h->inotify_fd = inotify_init1(IN_NONBLOCK);
-        h->next_index = 0;
 
         return h->inotify_fd;
 }
@@ -138,42 +138,29 @@ int FileMonitor_monitor(struct FMHandle *h, const char *path,
 
         if (-1 != rv) {
                 // check if its a known path
-                struct FM *fm = findPath(h, path);
-                if (NULL == fm) {
-                        // not a known path so we use a new slot in
-                        // the monitors array
-                        fm = &h->monitors[h->next_index];
-                        h->count++;
-                }
-
-                fm->wd = wd;
-                fm->onWatchSetup = onWatchSetup;
-                fm->onUpdate = onUpdate;
-                fm->onDelete = onDelete;
-                strncpy(fm->path, path, FM_PATH_MAX_LENGTH-1);
-
-                // find a new next index
-                int i = h->next_index;
-                for (; i < FM_MAX_MONITORS; i++) {
-                        if (0 == h->monitors[i].path[0]) {
-
-                                h->next_index = i;
+                bool found_existing = false;
+                struct FM *new_fm = NULL;
+                FOR (h->monitors) {
+                        if (0 == fm->path[0]) {
+                                new_fm = fm;
+                        }
+                        else if (0 == strcmp(path, fm->path)) {
+                                new_fm = fm;
+                                found_existing = true;
                                 break;
                         }
                 }
-                if (i == FM_MAX_MONITORS) {
-                        for (i = 0; i < h->next_index; i++) {
-                                if (0 == h->monitors[i].path[0]) {
+                if (!found_existing) {++h->count;}
 
-                                        h->next_index = i;
-                                        break;
-                                }
-                        }
-                }
+                new_fm->wd = wd;
+                new_fm->onWatchSetup = onWatchSetup;
+                new_fm->onUpdate = onUpdate;
+                new_fm->onDelete = onDelete;
+                strncpy(new_fm->path, path, FM_PATH_MAX_LENGTH-1);
 
                 if ((-1 != wd) && onWatchSetup) {
-                        if (FM_UNMONITOR == onWatchSetup(h, path)) {
-                                remove_monitor(h, fm);
+                        if (FM_UNMONITOR == onWatchSetup(h, new_fm->path)) {
+                                remove_monitor(h, new_fm);
                         }
                 }
         }
@@ -191,7 +178,6 @@ int FileMonitor_unMonitor(struct FMHandle *h, const char *path)
         if (fm) {
                 remove_monitor(h, fm);
                 rv = 1;
-                h->count--;
         }
         return rv;
 }

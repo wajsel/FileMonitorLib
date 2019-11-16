@@ -75,7 +75,6 @@ struct FMHandle {
         // INTERNAL BELOW
 
         struct FM monitors[FM_MAX_MONITORS];
-        int next_index;
         int count;
 };
 
